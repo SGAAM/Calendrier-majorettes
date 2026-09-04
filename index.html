@@ -1,1 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5b4bdb">
+<title>Calendrier des Majorettes</title>
+<style>
+:root{--p:#5b4bdb;--bg:#f6f7fb;--card:#fff;--text:#202331;--muted:#687080;--line:#e5e7ef}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#5b4bdb,#8b6de8);color:#fff;padding:28px 18px 22px;border-radius:0 0 24px 24px}
+h1{margin:0;font-size:28px}.sub{margin-top:6px;opacity:.9}
+main{max-width:720px;margin:auto;padding:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}
+button,select,input,textarea{font:inherit}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:600;cursor:pointer}
+.primary{background:var(--p);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;min-width:260px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:10px 0;box-shadow:0 2px 10px #1b204008}
+.date{font-size:13px;color:var(--p);font-weight:700;text-transform:uppercase}.event-title{font-size:19px;font-weight:750;margin:5px 0 10px}
+.meta{color:var(--muted);font-size:14px;line-height:1.55}.badge{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:99px;background:#eeeaff;color:#4c3bc2;font-size:12px;font-weight:700}
+.empty{text-align:center;padding:40px 15px;color:var(--muted)}
+dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 20px 60px #0004}dialog::backdrop{background:#0007}
+.form{padding:20px}.form h2{margin-top:0}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:10px 0}.field label{display:block;font-size:13px;font-weight:650;margin-bottom:5px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:500px){.row{grid-template-columns:1fr}.filters{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>✨ Calendrier des Majorettes</h1><div class="sub">Tous les événements, défilés et rendez-vous de l'équipe</div></header>
+<main>
+  <div class="toolbar">
+    <div class="filters">
+      <select id="month"><option value="all">Tous les mois</option></select>
+      <select id="type"><option value="all">Tous les événements</option><option>Défilé</option><option>Festival</option><option>Entraînement</option><option>Réunion</option><option>Forum</option><option>Autre</option></select>
+    </div>
+    <button class="primary" id="add">＋ Ajouter</button>
+    <button class="secondary" id="ics">📅 Exporter</button>
+  </div>
+  <section id="events"></section>
+</main>
 
+<dialog id="dlg">
+<form method="dialog" class="form" id="form">
+<h2>Ajouter un événement</h2>
+<div class="field"><label>Nom de l'événement</label><input id="title" required placeholder="Ex. Festival de Villeneuve"></div>
+<div class="row">
+<div class="field"><label>Date</label><input id="date" type="date" required></div>
+<div class="field"><label>Heure</label><input id="time" type="time"></div>
+</div>
+<div class="field"><label>Lieu</label><input id="place" placeholder="Ex. Parc des expositions"></div>
+<div class="field"><label>Type</label><select id="kind"><option>Défilé</option><option>Festival</option><option>Entraînement</option><option>Réunion</option><option>Forum</option><option>Autre</option></select></div>
+<div class="field"><label>Informations</label><textarea id="notes" rows="3" placeholder="Rendez-vous, tenue, matériel..."></textarea></div>
+<div class="actions"><button class="secondary" value="cancel">Annuler</button><button class="primary" id="save" value="default">Enregistrer</button></div>
+</form>
+</dialog>
+
+<script>
+const KEY='majorettes-events-v1';
+let events=JSON.parse(localStorage.getItem(KEY)||'[]');
+const $=id=>document.getElementById(id);
+const fmt=d=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(d+'T12:00'));
+function render(){
+ const m=$('month').value,t=$('type').value;
+ const list=events.filter(e=>(m==='all'||e.date.startsWith(m))&&(t==='all'||e.kind===t)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ $('events').innerHTML=list.length?list.map(e=>`<article class="card">
+ <div class="date">${fmt(e.date)}</div><div class="event-title">${esc(e.title)}</div>
+ <div class="meta">${e.time?'🕒 '+e.time+'<br>':''}${e.place?'📍 '+esc(e.place)+'<br>':''}${e.notes?'📝 '+esc(e.notes):''}</div>
+ <span class="badge">${esc(e.kind)}</span></article>`).join(''):'<div class="empty"><div style="font-size:42px">📅</div><h3>Aucun événement</h3><p>Ajoute les invitations au calendrier avec le bouton « Ajouter ».</p></div>';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function months(){
+ const vals=[...new Set(events.map(e=>e.date.slice(0,7)))].sort();
+ $('month').innerHTML='<option value="all">Tous les mois</option>'+vals.map(v=>{let d=new Date(v+'-01T12:00');return '<option value="'+v+'">'+new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(d)+'</option>'}).join('');
+}
+$('add').onclick=()=>{$('form').reset();$('dlg').showModal()};
+$('form').onsubmit=e=>{e.preventDefault();events.push({title:$('title').value,date:$('date').value,time:$('time').value,place:$('place').value,kind:$('kind').value,notes:$('notes').value});localStorage.setItem(KEY,JSON.stringify(events));months();render();$('dlg').close()};
+$('month').onchange=render;$('type').onchange=render;
+$('ics').onclick=()=>{
+ if(!events.length)return alert('Aucun événement à exporter.');
+ const escics=s=>String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+ const body=events.map(e=>{let dt=e.date.replace(/-/g,'')+(e.time?('T'+e.time.replace(':','')+'00'):'T120000');return 'BEGIN:VEVENT\\r\\nDTSTART:'+dt+'\\r\\nSUMMARY:'+escics(e.title)+'\\r\\nLOCATION:'+escics(e.place)+'\\r\\nDESCRIPTION:'+escics(e.notes)+'\\r\\nEND:VEVENT'}).join('\\r\\n');
+ const blob=new Blob(['BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//Calendrier Majorettes//FR\\r\\n'+body+'\\r\\nEND:VCALENDAR'],{type:'text/calendar'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='calendrier-majorettes.ics';a.click();
+};
+months();render();
+</script>
+</body>
+</html>
