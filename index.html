@@ -32,7 +32,7 @@ header{background:linear-gradient(135deg,#7d0714,#b20d1d);border-bottom:4px soli
 
 <script>
 const KEY='majorettes-events-v1';
-let events=JSON.parse(localStorage.getItem(KEY)||'[]');
+let events=JSON.parse(localStorage.getItem(KEY)||'[]').map((e,i)=>({...e,id:e.id||String(i)}));
 const $=id=>document.getElementById(id);
 let view=new Date(); view.setDate(1);
 const fmt=d=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(d+'T12:00'));
