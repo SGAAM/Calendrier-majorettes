@@ -44,11 +44,13 @@ dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 2
 <div class="row"><div class="field"><label>Date</label><input id="date" type="date" required></div><div class="field"><label>Heure</label><input id="time" type="time"></div></div>
 <div class="field"><label>Lieu</label><input id="place" placeholder="Ex. Parc des expositions"></div>
 <div class="field"><label>Type</label><select id="kind"><option>Défilé</option><option>Festival</option><option>Entraînement</option><option>Réunion</option><option>Forum</option><option>Autre</option></select></div>
+<div class="field" id="repeatField" style="display:none"><label class="outfit"><input type="checkbox" id="weekly"> Répéter toutes les semaines</label></div>
 <div class="field"><label>Tenue — plusieurs choix possibles</label><div class="outfits">
 <label class="outfit"><input type="checkbox" name="outfit" value="Justaucorps rouge et doré">Justaucorps rouge et doré</label>
 <label class="outfit"><input type="checkbox" name="outfit" value="Robes à paillettes">Robes à paillettes</label>
 <label class="outfit"><input type="checkbox" name="outfit" value="Bottes">Bottes</label>
 <label class="outfit"><input type="checkbox" name="outfit" value="Converses blanches">Converses blanches</label>
+<label class="outfit"><input type="checkbox" name="outfit" value="Tenue de sport adaptée">Tenue de sport adaptée</label>
 <label class="outfit"><input type="checkbox" id="specialOutfit" name="outfit" value="Tenue spéciale">Tenue spéciale</label>
 <input class="custom" id="customOutfit" placeholder="Précise la tenue spéciale…">
 </div></div>
@@ -59,6 +61,9 @@ dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 2
 <script>
 const KEY='majorettes-events-v1';
 let events=JSON.parse(localStorage.getItem(KEY)||'[]').map((e,i)=>({...e,id:e.id||String(i)}));
+// Suppression de l'ancien événement du Forum et activation des entraînements hebdomadaires.
+events=events.filter(e=>e.kind!=='Forum');
+let changed=false;events=events.map(e=>{if(e.kind==='Entraînement'&&!e.repeat){changed=true;return {...e,repeat:'weekly'}}return e});if(changed||localStorage.getItem(KEY)!==JSON.stringify(events))localStorage.setItem(KEY,JSON.stringify(events));
 const $=id=>document.getElementById(id);let view=new Date();view.setDate(1);
 const fmt=d=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(d+'T12:00'));
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
@@ -68,14 +73,15 @@ function render(){
  const type=$('type').value,y=view.getFullYear(),m=view.getMonth();$('calTitle').textContent=new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(view);
  const first=new Date(y,m,1),start=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate(),todayKey=new Date().toISOString().slice(0,10);let cells='';
  for(let i=0;i<42;i++){const n=i-start+1;let yy=y,mm=m,d=n,other=false;if(n<1){d=prevDays+n;mm=m-1;other=true;if(mm<0){mm=11;yy--;}}else if(n>days){d=n-days;mm=m+1;other=true;if(mm>11){mm=0;yy++;}}
-  const key=iso(yy,mm,d),list=events.filter(e=>e.date===key&&(type==='all'||e.kind===type)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));cells+='<div class="day '+(other?'other ':'')+(key===todayKey?'today':'')+'"><div class="num">'+d+'</div>'+list.slice(0,3).map(e=>'<button class="event '+cls(e.kind)+'" data-id="'+esc(e.id)+'"><span class="time">'+(e.time?esc(e.time)+' · ':'')+'</span>'+esc(e.title)+'</button>').join('')+(list.length>3?'<div class="more">+'+(list.length-3)+' autre(s)</div>':'')+'</div>';
+  const key=iso(yy,mm,d),list=events.filter(e=>{if(type!=='all'&&e.kind!==type)return false;if(e.date===key)return true;if(e.kind==='Entraînement'&&e.repeat==='weekly'){const a=new Date(e.date+'T12:00:00'),b=new Date(key+'T12:00:00'),diff=Math.round((b-a)/86400000);return diff>=0&&diff%7===0}return false}).sort((a,b)=>(a.time||'').localeCompare(b.time||''));cells+='<div class="day '+(other?'other ':'')+(key===todayKey?'today':'')+'"><div class="num">'+d+'</div>'+list.slice(0,3).map(e=>'<button class="event '+cls(e.kind)+'" data-id="'+esc(e.id)+'"><span class="time">'+(e.time?esc(e.time)+' · ':'')+'</span>'+esc(e.title)+'</button>').join('')+(list.length>3?'<div class="more">+'+(list.length-3)+' autre(s)</div>':'')+'</div>';
  }$('events').innerHTML=cells;document.querySelectorAll('.event').forEach(b=>b.onclick=()=>showEvent(b.dataset.id));
 }
 function showEvent(id){const e=events.find(x=>x.id===id);if(!e)return;const os=Array.isArray(e.outfit)?e.outfit:(e.outfit?[e.outfit]:[]);$('detail').innerHTML='<div class="detail"><h2>'+esc(e.title)+'</h2><div class="info">📅 '+fmt(e.date)+'</div>'+(e.time?'<div class="info">🕒 '+esc(e.time)+'</div>':'')+(e.place?'<div class="info">📍 '+esc(e.place)+'</div>':'')+'<div class="info">🏷️ '+esc(e.kind)+'</div>'+(os.length?'<div class="info"><strong>Tenue</strong><div class="badges">'+os.map(o=>'<span class="badge">👗 '+esc(o)+'</span>').join('')+'</div></div>':'')+(e.notes?'<div class="info">📝 '+esc(e.notes)+'</div>':'')+'<div class="actions"><button class="btn" onclick="detail.close()">Fermer</button></div></div>';$('detail').showModal();}
 $('prev').onclick=()=>{view.setMonth(view.getMonth()-1);render()};$('next').onclick=()=>{view.setMonth(view.getMonth()+1);render()};$('today').onclick=()=>{view=new Date();view.setDate(1);render()};$('type').onchange=render;
-$('add').onclick=()=>{$('form').reset();document.querySelectorAll('input[name="outfit"]').forEach(x=>x.checked=false);$('customOutfit').style.display='none';$('dlg').showModal()};
+$('kind').onchange=()=>{$('repeatField').style.display=$('kind').value==='Entraînement'?'block':'none';if($('kind').value==='Entraînement')$('weekly').checked=true};
+$('add').onclick=()=>{$('form').reset();document.querySelectorAll('input[name="outfit"]').forEach(x=>x.checked=false);$('customOutfit').style.display='none';$('repeatField').style.display='none';$('weekly').checked=false;$('dlg').showModal()};
 $('specialOutfit').onchange=()=>{$('customOutfit').style.display=$('specialOutfit').checked?'block':'none'};
-$('form').onsubmit=e=>{e.preventDefault();let os=[...document.querySelectorAll('input[name="outfit"]:checked')].map(x=>x.value),custom=$('customOutfit').value.trim();if($('specialOutfit').checked&&custom){os=os.filter(x=>x!=='Tenue spéciale');os.push(custom)}events.push({id:crypto.randomUUID(),title:$('title').value,date:$('date').value,time:$('time').value,place:$('place').value,kind:$('kind').value,outfit:os,notes:$('notes').value});localStorage.setItem(KEY,JSON.stringify(events));render();$('dlg').close()};
+$('form').onsubmit=e=>{e.preventDefault();let os=[...document.querySelectorAll('input[name="outfit"]:checked')].map(x=>x.value),custom=$('customOutfit').value.trim();if($('specialOutfit').checked&&custom){os=os.filter(x=>x!=='Tenue spéciale');os.push(custom)}events.push({id:crypto.randomUUID(),title:$('title').value,date:$('date').value,time:$('time').value,place:$('place').value,kind:$('kind').value,outfit:os,notes:$('notes').value,repeat:$('kind').value==='Entraînement'&&$('weekly').checked?'weekly':''});localStorage.setItem(KEY,JSON.stringify(events));render();$('dlg').close()};
 $('ics').onclick=()=>{if(!events.length)return alert('Aucun événement à exporter.');const escics=s=>String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');const body=events.map(e=>{let dt=e.date.replace(/-/g,'')+(e.time?'T'+e.time.replace(':','')+'00':'T120000');return 'BEGIN:VEVENT\\r\\nDTSTART:'+dt+'\\r\\nSUMMARY:'+escics(e.title)+'\\r\\nLOCATION:'+escics(e.place)+'\\r\\nDESCRIPTION:'+escics(e.notes)+'\\r\\nEND:VEVENT'}).join('\\r\\n');const blob=new Blob(['BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//Golden Stars//FR\\r\\n'+body+'\\r\\nEND:VCALENDAR'],{type:'text/calendar'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='calendrier-golden-stars.ics';a.click()};
 render();
 </script>
