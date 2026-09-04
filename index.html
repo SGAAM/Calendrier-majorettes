@@ -9,7 +9,7 @@
 :root{--p:#b20d1d;--gold:#c9972b;--bg:#fffaf2;--card:#fff;--text:#202331;--muted:#687080;--line:#ead9b4}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
 header{background:linear-gradient(135deg,#8f0715,#c51b2b);border-bottom:4px solid var(--gold);color:#fff;padding:28px 18px 22px;border-radius:0 0 24px 24px}
-h1{margin:0;font-size:28px}.sub{margin-top:6px;opacity:.9}
+.brand{display:flex;align-items:center;gap:14px}.brand-logo{width:78px;height:92px;flex:0 0 auto;filter:drop-shadow(0 3px 4px #0005)}h1{margin:0;font-size:28px}.sub{margin-top:6px;opacity:.9}
 main{max-width:720px;margin:auto;padding:16px}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}
 button,select,input,textarea{font:inherit}
@@ -23,11 +23,22 @@ select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px
 .empty{text-align:center;padding:40px 15px;color:var(--muted)}
 dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 20px 60px #0004}dialog::backdrop{background:#0007}
 .form{padding:20px}.form h2{margin-top:0}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:10px 0}.field label{display:block;font-size:13px;font-weight:650;margin-bottom:5px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
-@media(max-width:500px){.row{grid-template-columns:1fr}.filters{grid-template-columns:1fr}}
+@media(max-width:500px){.row{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.brand-logo{width:62px;height:74px}h1{font-size:22px}}
 </style>
 </head>
 <body>
-<header><h1>✨ Calendrier des Majorettes</h1><div style="margin-top:8px;color:#ffe8a8;font-weight:700;letter-spacing:.08em">ROUGE &amp; DORÉ</div><div class="sub">Tous les événements, défilés et rendez-vous de l'équipe</div></header>
+<header><div class="brand">
+<svg class="brand-logo" viewBox="0 0 270 320" role="img" aria-label="Golden Stars Majorette Club">
+<path d="M135 6 L250 48 L241 205 Q229 278 135 314 Q41 278 29 205 L20 48 Z" fill="#b20d1d" stroke="#f0c84b" stroke-width="8"/>
+<circle cx="135" cy="105" r="55" fill="#b20d1d"/>
+<path d="M136 58c-13 0-24 11-24 24s11 24 24 24 24-11 24-24-11-24-24-24zm-8 53c-7 5-15 12-19 24l-16 54 18 5 13-35 4 55-30 46 20 12 25-42 25 42 20-12-30-46 4-55 13 35 18-5-16-54-4-12-12-19-19-24l-8 11z" fill="#f0c84b"/>
+<path d="M76 198 Q135 184 194 198 L210 225 Q135 214 60 225Z" fill="#b20d1d" stroke="#f0c84b" stroke-width="5"/>
+<text x="135" y="216" text-anchor="middle" fill="#f0c84b" font-size="17" font-weight="800" font-family="Arial">GOLDEN STARS</text>
+<text x="135" y="239" text-anchor="middle" fill="#f0c84b" font-size="10" font-weight="700" font-family="Arial">MAJORETTE CLUB</text>
+<path d="M72 85l-25-18 30 5-3-28 14 25M198 85l25-18-30 5 3-28-14 25" fill="none" stroke="#f0c84b" stroke-width="5" stroke-linecap="round"/>
+</svg>
+<div><h1>✨ Calendrier des Majorettes</h1><div style="margin-top:8px;color:#ffe8a8;font-weight:700;letter-spacing:.08em">ROUGE &amp; DORÉ</div><div class="sub">Tous les événements, défilés et rendez-vous de l'équipe</div></div>
+</div></header>
 <main>
   <div class="toolbar">
     <div class="filters">
