@@ -61,8 +61,7 @@ dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 2
 <script>
 const KEY='majorettes-events-v1';
 let events=JSON.parse(localStorage.getItem(KEY)||'[]').map((e,i)=>({...e,id:e.id||String(i)}));
-// Suppression de l'ancien événement du Forum et activation des entraînements hebdomadaires.
-events=events.filter(e=>e.kind!=='Forum');
+// Conservation des événements Forum et activation des entraînements hebdomadaires.
 let changed=false;events=events.map(e=>{if(e.kind==='Entraînement'&&!e.repeat){changed=true;return {...e,repeat:'weekly'}}return e});if(changed||localStorage.getItem(KEY)!==JSON.stringify(events))localStorage.setItem(KEY,JSON.stringify(events));
 const $=id=>document.getElementById(id);let view=new Date();view.setDate(1);
 const fmt=d=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(d+'T12:00'));
