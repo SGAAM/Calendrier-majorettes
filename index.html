@@ -50,7 +50,7 @@ dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 2
 </div>
 <div class="field"><label>Lieu</label><input id="place" placeholder="Ex. Parc des expositions"></div>
 <div class="field"><label>Type</label><select id="kind"><option>Défilé</option><option>Festival</option><option>Entraînement</option><option>Réunion</option><option>Forum</option><option>Autre</option></select></div>
-<div class="field"><label>Tenue</label><select id="outfit"><option>À définir</option><option>Tenue habituelle</option><option>Robe à paillettes</option><option>Tenue d’entraînement</option><option>Tenue spéciale</option></select></div>
+<div class="field"><label>Tenue — plusieurs choix possibles</label><div class="outfit-options"><label class="outfit-option"><input type="checkbox" name="outfit" value="Justaucorps rouge et doré"> Justaucorps rouge et doré</label><label class="outfit-option"><input type="checkbox" name="outfit" value="Robe à paillettes"> Robe à paillettes</label><label class="outfit-option"><input type="checkbox" name="outfit" value="Bottes"> Bottes</label><label class="outfit-option"><input type="checkbox" name="outfit" value="Converses blanches"> Converses blanches</label><label class="outfit-option"><input type="checkbox" id="specialOutfit" name="outfit" value="Tenue spéciale"> Tenue spéciale</label><input class="custom-outfit" id="customOutfit" placeholder="Précise la tenue spéciale…"></div></div>
 <div class="field"><label>Informations</label><textarea id="notes" rows="3" placeholder="Rendez-vous, tenue, matériel..."></textarea></div>
 <div class="actions"><button class="secondary" value="cancel">Annuler</button><button class="primary" id="save" value="default">Enregistrer</button></div>
 </form>
@@ -67,14 +67,14 @@ function render(){
  $('events').innerHTML=list.length?list.map(e=>`<article class="card">
  <div class="date">${fmt(e.date)}</div><div class="event-title">${esc(e.title)}</div>
  <div class="meta">${e.time?'🕒 '+e.time+'<br>':''}${e.place?'📍 '+esc(e.place)+'<br>':''}${e.notes?'📝 '+esc(e.notes):''}</div>
- <span class="badge">${esc(e.kind)}</span>${e.outfit?'<span class="badge" style="margin-left:6px;background:#fff3df;color:#9a5b00">👗 '+esc(e.outfit)+'</span>':''}</article>`).join(''):'<div class="empty"><div style="font-size:42px">📅</div><h3>Aucun événement</h3><p>Ajoute les invitations au calendrier avec le bouton « Ajouter ».</p></div>';
+ <span class="badge">${esc(e.kind)}</span>${(Array.isArray(e.outfit)?e.outfit:(e.outfit?[e.outfit]:[])).map(o=>'<span class="badge" style="margin-left:6px;background:#fff3df;color:#9a5b00">👗 '+esc(o)+'</span>').join('')}</article>`).join(''):'<div class="empty"><div style="font-size:42px">📅</div><h3>Aucun événement</h3><p>Ajoute les invitations au calendrier avec le bouton « Ajouter ».</p></div>';
 }
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
 function months(){
  const vals=[...new Set(events.map(e=>e.date.slice(0,7)))].sort();
  $('month').innerHTML='<option value="all">Tous les mois</option>'+vals.map(v=>{let d=new Date(v+'-01T12:00');return '<option value="'+v+'">'+new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(d)+'</option>'}).join('');
 }
-$('add').onclick=()=>{$('form').reset();$('dlg').showModal()};
+$('add').onclick=()=>{$('form').reset();document.querySelectorAll('input[name="outfit"]').forEach(x=>x.checked=false);$('customOutfit').style.display='none';$('dlg').showModal()}; $('specialOutfit').onchange=()=>{$('customOutfit').style.display=$('specialOutfit').checked?'block':'none';};
 $('form').onsubmit=e=>{e.preventDefault();events.push({title:$('title').value,date:$('date').value,time:$('time').value,place:$('place').value,kind:$('kind').value,notes:$('notes').value});localStorage.setItem(KEY,JSON.stringify(events));months();render();$('dlg').close()};
 $('month').onchange=render;$('type').onchange=render;
 $('ics').onclick=()=>{
