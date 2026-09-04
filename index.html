@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#5b4bdb">
+<meta name="theme-color" content="#b20d1d">
 <title>Calendrier des Majorettes</title>
 <style>
-:root{--p:#5b4bdb;--bg:#f6f7fb;--card:#fff;--text:#202331;--muted:#687080;--line:#e5e7ef}
+:root{--p:#b20d1d;--gold:#c9972b;--bg:#fffaf2;--card:#fff;--text:#202331;--muted:#687080;--line:#ead9b4}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-header{background:linear-gradient(135deg,#5b4bdb,#8b6de8);color:#fff;padding:28px 18px 22px;border-radius:0 0 24px 24px}
+header{background:linear-gradient(135deg,#8f0715,#c51b2b);border-bottom:4px solid var(--gold);color:#fff;padding:28px 18px 22px;border-radius:0 0 24px 24px}
 h1{margin:0;font-size:28px}.sub{margin-top:6px;opacity:.9}
 main{max-width:720px;margin:auto;padding:16px}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}
 button,select,input,textarea{font:inherit}
 button{border:0;border-radius:12px;padding:11px 14px;font-weight:600;cursor:pointer}
-.primary{background:var(--p);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
+.primary{background:var(--p);color:#fff}.gold{background:var(--gold);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
 select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}
 .filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;min-width:260px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:10px 0;box-shadow:0 2px 10px #1b204008}
 .date{font-size:13px;color:var(--p);font-weight:700;text-transform:uppercase}.event-title{font-size:19px;font-weight:750;margin:5px 0 10px}
-.meta{color:var(--muted);font-size:14px;line-height:1.55}.badge{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:99px;background:#eeeaff;color:#4c3bc2;font-size:12px;font-weight:700}
+.meta{color:var(--muted);font-size:14px;line-height:1.55}.badge{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:99px;background:#fff1d1;color:#8a5b00;border:1px solid #e4c77f;font-size:12px;font-weight:700}
 .empty{text-align:center;padding:40px 15px;color:var(--muted)}
 dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 20px 60px #0004}dialog::backdrop{background:#0007}
 .form{padding:20px}.form h2{margin-top:0}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:10px 0}.field label{display:block;font-size:13px;font-weight:650;margin-bottom:5px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
@@ -27,7 +27,7 @@ dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 2
 </style>
 </head>
 <body>
-<header><h1>✨ Calendrier des Majorettes</h1><div class="sub">Tous les événements, défilés et rendez-vous de l'équipe</div></header>
+<header><h1>✨ Calendrier des Majorettes</h1><div style="margin-top:8px;color:#ffe8a8;font-weight:700;letter-spacing:.08em">ROUGE &amp; DORÉ</div><div class="sub">Tous les événements, défilés et rendez-vous de l'équipe</div></header>
 <main>
   <div class="toolbar">
     <div class="filters">
@@ -75,7 +75,7 @@ function months(){
  $('month').innerHTML='<option value="all">Tous les mois</option>'+vals.map(v=>{let d=new Date(v+'-01T12:00');return '<option value="'+v+'">'+new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(d)+'</option>'}).join('');
 }
 $('add').onclick=()=>{$('form').reset();document.querySelectorAll('input[name="outfit"]').forEach(x=>x.checked=false);$('customOutfit').style.display='none';$('dlg').showModal()}; $('specialOutfit').onchange=()=>{$('customOutfit').style.display=$('specialOutfit').checked?'block':'none';};
-$('form').onsubmit=e=>{e.preventDefault();events.push({title:$('title').value,date:$('date').value,time:$('time').value,place:$('place').value,kind:$('kind').value,notes:$('notes').value});localStorage.setItem(KEY,JSON.stringify(events));months();render();$('dlg').close()};
+$('form').onsubmit=e=>{e.preventDefault();let outfits=[...document.querySelectorAll('input[name="outfit"]:checked')].map(x=>x.value); const custom=$('customOutfit').value.trim(); if($('specialOutfit').checked && custom){outfits=outfits.filter(x=>x!=='Tenue spéciale'); outfits.push(custom);} events.push({title:$('title').value,date:$('date').value,time:$('time').value,place:$('place').value,kind:$('kind').value,outfit:outfits,notes:$('notes').value});localStorage.setItem(KEY,JSON.stringify(events));months();render();$('dlg').close()};
 $('month').onchange=render;$('type').onchange=render;
 $('ics').onclick=()=>{
  if(!events.length)return alert('Aucun événement à exporter.');
