@@ -50,6 +50,7 @@ dialog{border:0;border-radius:20px;width:min(94%,560px);padding:0;box-shadow:0 2
 </div>
 <div class="field"><label>Lieu</label><input id="place" placeholder="Ex. Parc des expositions"></div>
 <div class="field"><label>Type</label><select id="kind"><option>Défilé</option><option>Festival</option><option>Entraînement</option><option>Réunion</option><option>Forum</option><option>Autre</option></select></div>
+<div class="field"><label>Tenue</label><select id="outfit"><option>À définir</option><option>Tenue habituelle</option><option>Robe à paillettes</option><option>Tenue d’entraînement</option><option>Tenue spéciale</option></select></div>
 <div class="field"><label>Informations</label><textarea id="notes" rows="3" placeholder="Rendez-vous, tenue, matériel..."></textarea></div>
 <div class="actions"><button class="secondary" value="cancel">Annuler</button><button class="primary" id="save" value="default">Enregistrer</button></div>
 </form>
@@ -66,7 +67,7 @@ function render(){
  $('events').innerHTML=list.length?list.map(e=>`<article class="card">
  <div class="date">${fmt(e.date)}</div><div class="event-title">${esc(e.title)}</div>
  <div class="meta">${e.time?'🕒 '+e.time+'<br>':''}${e.place?'📍 '+esc(e.place)+'<br>':''}${e.notes?'📝 '+esc(e.notes):''}</div>
- <span class="badge">${esc(e.kind)}</span></article>`).join(''):'<div class="empty"><div style="font-size:42px">📅</div><h3>Aucun événement</h3><p>Ajoute les invitations au calendrier avec le bouton « Ajouter ».</p></div>';
+ <span class="badge">${esc(e.kind)}</span>${e.outfit?'<span class="badge" style="margin-left:6px;background:#fff3df;color:#9a5b00">👗 '+esc(e.outfit)+'</span>':''}</article>`).join(''):'<div class="empty"><div style="font-size:42px">📅</div><h3>Aucun événement</h3><p>Ajoute les invitations au calendrier avec le bouton « Ajouter ».</p></div>';
 }
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
 function months(){
